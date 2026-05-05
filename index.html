@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Potenciación Humana · Autodiagnóstico</title>
+<style>
+:root{--navy:#1B3A5C;--accent:#2E75B6;--amber:#F59E0B;--bg:#F4F6F8;--surface:#FFFFFF;--border:#DDE3EC;--text:#1E293B;--muted:#64748B;--light:#EAF4FB;--green:#10B981;--red:#EF4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+#topbar{background:var(--navy);color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+#topbar h1{font-size:14px;font-weight:600;letter-spacing:.02em}
+#topbar .sub{font-size:12px;opacity:.55}
+#prog-wrap{height:3px;background:rgba(255,255,255,.15);position:sticky;top:46px;z-index:99}
+#prog-bar{height:100%;background:var(--amber);transition:width .4s;width:0}
+#app{max-width:740px;margin:0 auto;padding:28px 20px 80px}
+
+/* Typography */
+.phase-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.phase-title{font-size:22px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.phase-desc{font-size:14px;color:var(--muted);margin-bottom:24px;max-width:560px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:14px}
+
+/* Buttons */
+.btn{padding:10px 22px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--bg)}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.primary:hover{opacity:.88}
+.btn.amber{background:var(--amber);color:#fff;border-color:var(--amber)}
+.btn.amber:hover{opacity:.88}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+
+/* Category sections */
+.cat-section{margin-bottom:24px}
+.cat-header{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:2px solid var(--border);margin-bottom:2px}
+.cat-em{font-size:18px}
+.cat-name{font-size:15px;font-weight:600;color:var(--navy)}
+
+/* Question rows */
+.q-row{padding:14px 0;border-bottom:.5px solid var(--border)}
+.q-row:last-child{border-bottom:none}
+.q-text{font-size:14px;color:var(--text);margin-bottom:10px;line-height:1.5}
+.q-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Scale boxes */
+.scale-wrap{display:flex;gap:4px}
+.sbox{width:30px;height:30px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .12s;user-select:none}
+.sbox:hover{border-color:var(--accent);color:var(--accent)}
+.sbox.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
+.scale-labels{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Yes/No buttons */
+.yn-wrap{display:flex;gap:6px}
+.yn-btn{padding:7px 20px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;background:var(--surface);color:var(--muted);user-select:none}
+.yn-btn:hover{border-color:var(--accent);color:var(--accent)}
+.yn-btn.sel-si{background:var(--navy);color:#fff;border-color:var(--navy)}
+.yn-btn.sel-no{background:#F1F5F9;color:var(--muted);border-color:var(--border);text-decoration:line-through}
+.yn-btn.alarm{background:#FEF2F2;color:var(--red);border-color:var(--red)}
+
+/* Quantity input */
+.qty-wrap{display:flex;align-items:center;gap:8px}
+.qty-input{width:80px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-weight:500;color:var(--text);background:var(--surface);text-align:center}
+.qty-input:focus{outline:none;border-color:var(--accent)}
+.qty-unit{font-size:13px;color:var(--muted)}
+
+/* No-data */
+.nd-label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.nd-label input{accent-color:var(--muted)}
+.q-controls.disabled .scale-wrap,.q-controls.disabled .yn-wrap,.q-controls.disabled .qty-wrap{opacity:.25;pointer-events:none}
+
+/* Nota */
+
+/* Phase 2 — causes */
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.q-counter{font-size:13px;color:var(--muted)}
+.q-badge{display:inline-flex;align-items:center;gap:4px;background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px}
+.cause-opt{padding:12px 16px;margin:6px 0;border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;gap:12px;align-items:flex-start;transition:border-color .12s,background .12s}
+.cause-opt:hover{border-color:var(--accent);background:var(--light)}
+.cause-opt.on{border-color:var(--navy);background:var(--light)}
+.cause-opt input[type=checkbox]{margin-top:2px;accent-color:var(--navy);min-width:16px;cursor:pointer}
+.cause-code{font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap;min-width:34px}
+.cause-text{font-size:13px;color:var(--text);line-height:1.5}
+
+/* Diagnosis */
+.diag-bar-wrap{background:#E2E8F0;border-radius:3px;height:6px;margin-top:6px}
+.diag-bar{height:100%;border-radius:3px;background:var(--navy)}
+.diag-cause{padding:14px 16px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+.sc-card{padding:14px 18px;border-left:4px solid var(--navy);background:var(--light);border-radius:0 8px 8px 0;margin-bottom:10px}
+.blind-item{padding:8px 14px;border:1px dashed var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--muted)}
+.callout{padding:12px 18px;background:#FEF9EC;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;font-size:13px;color:#92400E;margin:14px 0}
+.results-table{width:100%;border-collapse:collapse;font-size:13px}
+.results-table th{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600}
+.results-table td{padding:8px 12px;border-bottom:.5px solid var(--border);vertical-align:top}
+
+/* Intro steps */
+.intro-steps{display:grid;gap:10px;margin:18px 0}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step-num{min-width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.step-text{font-size:14px;color:var(--muted);padding-top:3px}
+
+/* Type legend */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.leg-dot{width:10px;height:10px;border-radius:50%}
+
+#copy-area{position:fixed;left:-9999px}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <h1>Potenciación Humana · Autodiagnóstico</h1>
+  <span class="sub" id="phase-ind">Inicio</span>
+</div>
+<div id="prog-wrap"><div id="prog-bar"></div></div>
+<div id="app"></div>
+<textarea id="copy-area"></textarea>
+<script>
+// ─── CAUSAS RAÍZ ─────────────────────────────────────────────────────────────
+const CR={
+CR01:"No tengo sistema externo de captura — el cerebro lleva todo el peso",
+CR02:"Mi entorno funciona por defecto, no por diseño propio",
+CR03:"No sé exactamente cuándo una tarea está terminada",
+CR04:"Tengo demasiados frentes activos a la vez",
+CR05:"No tengo prioridades reales claras — todo compite al mismo nivel",
+CR06:"Uso mi mejor energía del día en tareas de bajo impacto",
+CR07:"Mi base fisiológica está degradada: sueño, comida o movimiento",
+CR08:"Mi cerebro busca el siguiente estímulo en vez de sostener el foco",
+CR09:"Evito la incomodidad del trabajo real con actividad que parece productiva",
+CR10:"No tengo rituales que anclen mis bloques de trabajo",
+CR11:"Me defino como alguien que intenta más que como alguien que ejecuta",
+CR12:"No mido mi output real — opero sobre estimaciones",
+CR13:"Hay carga emocional de fondo que consume recursos sin que lo note",
+CR14:"Ejecuto yo mismo tareas que podrían hacer otros",
+CR15:"Mi entorno social normaliza la dispersión y la falta de exigencia",
+CR16:"Nunca estoy en silencio real — siempre hay input externo de fondo",
+CR17:"Confundo estar ocupado con estar produciendo",
+CR18:"Mis tareas no tienen límite temporal — se expanden solas",
+CR19:"No tengo política de no — evalúo cada solicitud en caliente",
+CR20:"Hay brecha real entre lo que declaro importante y cómo me comporto",
+CR21:"No tolero la ambigüedad del trabajo incierto",
+CR22:"Confundo tipos de problemas: investigo cuando debería actuar",
+CR23:"Confío demasiado en mi memoria para gestionar pendientes",
+CR24:"No reviso mi sistema — funciono con decisiones desactualizadas",
+CR25:"Solo ejecuto bien cuando estoy de humor para ello",
+CR26:"No tengo un horizonte claro a 12 meses o más"
+};
+
+// ─── SUPER CAUSAS ─────────────────────────────────────────────────────────────
+const SC={
+SC1:{name:"Sistema externo inexistente",desc:"Todo lo que no está fuera de tu cabeza compite dentro",cs:['CR01','CR03','CR04','CR10','CR12','CR18','CR23','CR24'],color:"#1B3A5C"},
+SC2:{name:"Entorno no diseñado",desc:"Tu entorno decide por ti sin que lo notes",cs:['CR02'],color:"#2E75B6"},
+SC3:{name:"Energía biológica mal gestionada",desc:"Sin energía no hay foco — es un limitante duro",cs:['CR06','CR07'],color:"#0F6E56"},
+SC4:{name:"Evitación del esfuerzo cognitivo",desc:"No huyes del trabajo — huyes de cómo se siente",cs:['CR08','CR09','CR13','CR16','CR21','CR25'],color:"#8B1A1A"},
+SC5:{name:"Falta de dirección y criterios",desc:"Si todo vale, todo entra — decides mal todo el tiempo",cs:['CR05','CR14','CR19','CR22','CR26'],color:"#6B4C9A"},
+SC6:{name:"Identidad y estándares",desc:"El sistema operativo sobre el que corre todo lo demás",cs:['CR11','CR15','CR17','CR20'],color:"#854F0B"}
+};
+
+// CR max possible (sum of max_score for all questions where that CR appears as option)
+const CR_MAX={
+CR01:284,CR02:376,CR03:18,CR04:112,CR05:242,CR06:92,CR07:72,
+CR08:230,CR09:294,CR10:96,CR11:74,CR12:10,CR13:82,CR14:26,
+CR15:36,CR16:26,CR17:156,CR18:20,CR19:112,CR20:56,CR21:82,
+CR22:18,CR23:168,CR24:16,CR25:88,CR26:10
+};
+
+// SC max possible base (with children <12)
+const SC_MAX_BASE={SC1:382,SC2:376,SC3:120,SC4:436,SC5:272,SC6:252};
+// Reduction if no children under 12
+const SC_MAX_REDUCTION={SC1:28,SC2:10,SC3:10,SC4:10,SC5:18,SC6:10};
+
+// SC framing for diagnosis (aggressive, per Gemini)
+const SC_FRAME={
+SC1:"de tus ideas, tareas y pendientes se pierden antes de que puedas actuar sobre ellos",
+SC2:"de tus decisiones diarias las toma otro — la app, la notificación, el hábito por defecto",
+SC3:"de tu capacidad cognitiva está comprometida antes de que empieces a trabajar",
+SC4:"de tus bloques de trabajo van a actividad que parece productiva pero no produce nada real",
+SC5:"de tus decisiones diarias las tomas en caliente, sin filtro ni criterio previo",
+SC6:"de tu comportamiento contradice lo que dices que eres y lo que dices que importa"
+};
+
+// Contextualized cause texts per question (328 entries)
+const CR_CTX={
+  Q01:{CR07:"Mi alimentación está afectando mi energía y mi capacidad de pensar con claridad", CR06:"Como lo que tengo cerca en el momento, sin considerar cómo eso va a afectar mi cerebro en las próximas horas", CR17:"Sigo trabajando aunque mi capacidad real ha bajado, confundiendo presencia con productividad", CR25:"Solo rindo bien cuando me siento con energía, y no gestiono esos picos y valles"},
+  Q02:{CR07:"Trato el agua como supervivencia básica, no como combustible, así que solo bebo cuando el cuerpo me obliga", CR06:"Optimizo herramientas y sistemas pero ignoro el hardware más básico: mi propio cuerpo", CR23:"Espero a tener sed para beber, aunque para entonces el rendimiento ya está cayendo", CR25:"Solo presto atención a la hidratación cuando ya noto los efectos"},
+  Q03:{CR07:"Estoy saboteando la calidad de mi sueño y por tanto mi rendimiento al día siguiente", CR02:"Las pantallas están en la cama, en la mesilla, en el baño — las he puesto yo ahí y nunca he decidido sacarlas", CR08:"El scroll o el contenido antes de dormir satisface la búsqueda de estímulo de mi cerebro", CR09:"Uso las pantallas para aplazar el momento de quedarme solo con mis pensamientos"},
+  Q04:{CR07:"Interrumpo los ciclos de sueño repetidamente, degradando la calidad del descanso", CR02:"Pongo 5 alarmas porque sé de antemano que no voy a levantarme a la primera — y acepto eso cada noche", CR10:"Me levanto negociando conmigo mismo cada mañana, pulsando aplazar hasta que ya no queda opción", CR25:"Me levanto dependiendo de cómo me sienta en el momento, no de una decisión tomada antes"},
+  Q05:{CR07:"Introduzco estímulos justo cuando el cerebro necesita desactivarse para consolidar memoria", CR08:"El impulso de revisar el teléfono antes de dormir es automático, no elegido", CR09:"Uso el teléfono para aplazar el momento de quedarme solo con mis pensamientos", CR02:"He normalizado dormirme mirando la pantalla — lo hago cada noche sin cuestionarlo"},
+  Q06:{CR07:"Estoy usando la cafeína como sustituto de un descanso real que no estoy obteniendo", CR06:"Uso la cafeína como parche para compensar el sueño insuficiente o el agotamiento que no quiero reconocer", CR09:"Uso la cafeína para mantenerme activo aunque el cuerpo necesite parar", CR17:"Confundo estar activo y estimulado con estar rindiendo de forma efectiva"},
+  Q07:{CR07:"La falta de luz natural desajusta mis ritmos circadianos y afecta mi energía y foco", CR02:"Me encierro a trabajar sin pensar en que mi cerebro necesita luz natural para regular sus ritmos", CR06:"Trabajo en las mismas condiciones de luz que en invierno aunque el sol esté ahí fuera", CR17:"Me quedo en el espacio de trabajo sin salir aunque salir me haría rendir mejor"},
+  Q08:{CR02:"Ignoro activamente el entorno físico — abro el portátil y me olvido de que mi cerebro necesita oxígeno para operar", CR07:"Trabajo horas en espacios cerrados sin ventilar y achaco el cansancio a falta de motivación o sueño", CR17:"Sigo trabajando en el mismo espacio aunque las condiciones no sean óptimas", CR06:"Optimizo software y herramientas pero ignoro el aire que respira el hardware más importante"},
+  Q09:{CR07:"Empujo sin parar hasta que el cuerpo me obliga a parar — y entonces ya es demasiado tarde para recuperar el foco", CR10:"Confundo el descanso con el ocio digital — me tumbo con el móvil en vez de dejar que el sistema nervioso se recupere realmente", CR06:"Agoto la energía sin recargarla durante el día — uso mal el ciclo de rendimiento", CR25:"Solo paro cuando ya no puedo más, no cuando sería más estratégico hacerlo"},
+  Q10:{CR05:"Acepto porque en el momento todo parece igual de importante, y así evito la incomodidad de decir que no", CR19:"Cada vez que llega una petición la evalúo desde cero — y en caliente casi siempre digo que sí", CR11:"Me cuesta decir no porque quiero ser visto como alguien disponible y colaborador", CR20:"Digo que mi tiempo es valioso pero lo entrego sin filtro a quien me lo pide"},
+  Q11:{CR21:"La incomodidad de dar el no en el momento me lleva a aplazarlo indefinidamente", CR01:"El no que no he dado sigue rondando mi cabeza hasta que lo digo — y mientras, ocupa espacio que necesito para otra cosa", CR13:"Sé que tengo que dar el no pero la carga emocional de hacerlo me paraliza", CR09:"Evito el malestar de la conversación difícil aplazándola, aunque eso genere más coste"},
+  Q12:{CR09:"Perfeccionar detalles es más cómodo que enfrentarme a la tarea de mayor impacto", CR21:"El resultado final es incierto — ajustar detalles da sensación de control sin serlo", CR11:"Necesito que el trabajo esté perfecto para sentirme seguro presentándolo o cerrándolo", CR25:"Solo avanzo al siguiente paso cuando me siento completamente satisfecho con el anterior"},
+  Q13:{CR13:"Hay carga emocional activa detrás del problema que no estoy procesando directamente", CR09:"La rumiación se siente como trabajar en el problema pero evita la acción real", CR25:"Solo actúo cuando me siento preparado emocionalmente — mientras, doy vueltas", CR21:"El problema tiene incertidumbre y darle vueltas da la ilusión de reducirla"},
+  Q14:{CR15:"Mi entorno social normaliza la queja, la dispersión y la falta de exigencia", CR11:"Me cuesta poner límites porque quiero ser visto como una persona generosa y disponible", CR20:"Digo que el entorno importa pero sigo eligiendo pasar tiempo con personas que me restan", CR05:"Dedico tiempo a quien me lo pide sin filtrar si esa persona me aporta o me resta"},
+  Q15:{CR05:"Me apunto a todo lo que parece interesante porque no tengo claro qué es lo que realmente necesito aprender ahora", CR26:"Me lanzo a cursos y eventos sin saber si me acercan o me alejan de donde quiero estar en 12 meses", CR08:"La novedad de un curso o evento activa mi interés independientemente de si lo necesito", CR19:"Decido a qué asistir o comprar en el momento en que lo veo, sin filtro previo que lo frene"},
+  Q16:{CR09:"Visualizar el resultado es más cómodo que enfrentarme al proceso de trabajo real", CR08:"La anticipación del resultado genera una descarga de dopamina que sacia sin ejecutar", CR25:"Necesito sentirme motivado por el resultado para ponerme a trabajar en el proceso", CR17:"Confundo pensar en el proyecto con avanzar en el proyecto"},
+  Q17:{CR11:"No me tomo en serio mis propios compromisos como tomaría los que hago con otros", CR20:"Hay una brecha real entre lo que me digo que voy a hacer y lo que realmente hago", CR25:"Cumplo los compromisos cuando estoy motivado, pero no cuando no me apetece", CR09:"Incumplir el compromiso es más cómodo que el esfuerzo que requiere cumplirlo"},
+  Q18:{CR09:"Consumir contenido sobre lo que voy a hacer es más cómodo que hacer el trabajo real", CR17:"Sentirme informado me da sensación de progreso aunque no haya avanzado nada", CR08:"El consumo de contenido satisface el impulso de novedad sin el coste del trabajo real", CR05:"Sigo consumiendo porque ejecutar requiere decidir cuál es el primer paso — y eso incomoda más que un podcast"},
+  Q19:{CR02:"Permito que las aplicaciones de otros decidan cuándo interrumpir mi atención porque me da pereza configurarlas", CR08:"Cada notificación activa una respuesta de atención en mi cerebro que interrumpe el foco", CR09:"Las notificaciones me dan una excusa para interrumpir lo que estaba haciendo", CR04:"Las interrupciones constantes me impiden sostener la atención en un solo frente"},
+  Q20:{CR02:"He decidido inconscientemente que el móvil vive en la mesa — nunca lo he cuestionado", CR08:"Ver el móvil activa el impulso de revisarlo aunque no haya decidido hacerlo", CR09:"Tener el móvil a la vista me da una vía de escape cuando la tarea se complica", CR16:"El móvil es un estímulo constante en mi campo visual que divide mi atención"},
+  Q21:{CR02:"El teléfono está en la mesilla por defecto y mirarlo al despertar es el hábito resultante", CR08:"El primer impulso del día es buscar novedad y estímulo antes de cualquier otra cosa", CR10:"El teléfono ya decide cómo empieza mi día — antes de que yo haya decidido nada", CR09:"Revisar el móvil al despertar aplaza el momento de enfrentarme al día"},
+  Q22:{CR02:"El teléfono en la mesa es la norma por defecto, no una decisión tomada activamente", CR20:"Digo que las relaciones son importantes pero divido la atención con el teléfono", CR08:"La posibilidad de que llegue algo nuevo me mantiene pendiente del dispositivo", CR09:"El teléfono me da una salida cuando la conversación es menos estimulante"},
+  Q23:{CR08:"Mi cerebro pide dopamina barata; desbloqueo la pantalla sin pensar solo para sentir que pasa algo nuevo", CR09:"Lo abro cuando la tarea que tengo delante genera incomodidad o aburrimiento", CR02:"El móvil siempre está accesible — no hay fricción que frene el impulso de abrirlo", CR21:"Lo abro cuando tengo algo incierto por delante como forma de aliviar esa tensión"},
+  Q24:{CR04:"Tengo tantos frentes activos y no sé en cuál centrarme, así que los alterno", CR08:"Alternar entre tareas y estímulos satisface la necesidad de novedad de mi cerebro", CR09:"La multitarea da la sensación de avanzar en varios frentes sin el coste del foco profundo", CR17:"Cuanto más activo estoy, más siento que estoy siendo productivo"},
+  Q25:{CR02:"He acumulado apps sin un criterio claro de qué herramienta uso para qué", CR05:"Instalo cada app nueva que parece útil sin revisar si ya tengo una que hace lo mismo", CR04:"Más herramientas activas significa más frentes cognitivos abiertos simultáneamente", CR17:"Tener muchas herramientas da sensación de capacidad aunque las use todas a medias"},
+  Q26:{CR02:"El calendario y sus notificaciones funcionan por defecto, no según mis necesidades", CR01:"Nunca he invertido 10 minutos en configurar cuándo y cómo quiero que el calendario me avise", CR10:"Las notificaciones mal configuradas interrumpen mis bloques de trabajo sin aporte real", CR03:"Dejo que el sistema decida cuándo avisarme porque configurarlo requiere una decisión que he postergado"},
+  Q27:{CR02:"Improviso con las contraseñas cada vez — y cada bloqueo o recuperación es tiempo y foco perdido que acepto como normal", CR23:"Confío en mi memoria para recordar contraseñas en vez de usar un sistema externo fiable", CR01:"Guardo las contraseñas en la cabeza, en notas de papel o en ningún sitio — y pago el precio cada vez que necesito una", CR09:"Recuperar contraseñas es la micro-excusa perfecta para retrasar 5 minutos más el inicio de la tarea difícil"},
+  Q28:{CR02:"Responder en tiempo real es la norma por defecto — nunca he decidido otra cosa activamente", CR08:"Cada mensaje nuevo activa el impulso de responder de forma inmediata", CR01:"Respondo en el orden en que llegan los mensajes — quien escribe último decide mis prioridades", CR09:"Responder mensajes es más inmediato y cómodo que el trabajo que tengo por delante"},
+  Q29:{CR02:"El email está siempre accesible y revisarlo sin horario es el comportamiento por defecto", CR05:"Abro el email porque cualquier cosa que entre puede parecer urgente — y así evito decidir qué es realmente importante", CR19:"Reviso el email cuando llega la notificación, cuando me aburro, o cuando necesito una excusa para parar — no tengo otro criterio", CR09:"Revisar el email es más cómodo e inmediato que el trabajo de mayor impacto"},
+  Q30:{CR01:"Abro el mismo email tres veces porque la primera vez no decidí qué hacer con él — y la segunda tampoco", CR03:"No sé cuándo un email está resuelto — lo reabro porque nunca lo cerré completamente", CR02:"La bandeja de entrada funciona como lista de tareas por defecto sin haberlo decidido", CR10:"Entro al correo sin un criterio claro de qué voy a hacer — salgo sin haberlo procesado"},
+  Q31:{CR02:"El chat de grupo es el canal por defecto para comunicarse, también para decidir", CR19:"Mando la decisión al grupo porque evito tomar la responsabilidad de decidir yo solo", CR04:"Cada hilo de decisión en grupo es un frente cognitivo abierto hasta que se resuelve", CR05:"Mando al grupo lo que podría decidir yo en 30 segundos, y espero días a que alguien lo haga"},
+  Q32:{CR01:"El mensaje pendiente queda como bucle abierto que el cerebro mantiene activo", CR21:"La incertidumbre sobre cómo va a reaccionar la otra persona me paraliza", CR09:"Abrir el mensaje y cerrarlo es una forma de lidiar con la incomodidad sin resolverla", CR13:"Hay carga emocional real asociada a esa conversación que estoy evitando"},
+  Q33:{CR08:"El feed está diseñado para activar el impulso de seguir scrolleando con cada item nuevo", CR02:"Uso las redes como fuente de información por defecto, sin haber decidido alternativas", CR09:"El feed es más accesible y estimulante que otras fuentes de información más densas", CR16:"Inyecto ruido digital en mi cabeza constantemente para no tener que lidiar con el silencio que exige pensar de verdad"},
+  Q34:{CR05:"Sigo todo lo que me parece interesante en el momento de descubrirlo, sin filtrarlo contra lo que realmente necesito", CR19:"Nunca he decidido activamente a quién sigo y a quién dejo de seguir con criterio", CR02:"He acumulado cientos de seguidos sin nunca hacer una limpieza deliberada de lo que entra en mi feed", CR08:"Más contenido en el feed significa más estímulo disponible para mi cerebro"},
+  Q35:{CR08:"El contenido de otros activa respuestas emocionales que satisfacen la búsqueda de estímulo", CR11:"Ver los logros de otros me afecta porque los uso como referencia de mi propio valor", CR15:"Mi entorno normaliza compararse con otros como forma de medir el propio progreso", CR20:"Digo que no me importa lo que hacen otros pero dedico tiempo real a seguirlo"},
+  Q36:{CR02:"Entro al streaming sin saber qué quiero ver y dejo que el algoritmo decida por mí durante media hora", CR05:"Trato el tiempo de ocio igual que el de trabajo: sin decidir de antemano qué quiero de él", CR08:"Explorar opciones activa el circuito de anticipación de recompensa del cerebro", CR19:"Decido qué ver cada vez desde cero — el ocio tampoco tiene sistema"},
+  Q37:{CR02:"Busco la playlist perfecta cada vez que me siento a trabajar — y eso come los primeros minutos del bloque", CR08:"Mi cerebro quiere un estímulo nuevo antes de enfrentarse a lo que toca hacer — y buscar la playlist perfecta es la excusa perfecta", CR09:"Pongo cualquier cosa mientras el cerebro se convence de que está preparándose para trabajar, cuando en realidad lo está aplazando", CR05:"Me quedo paralizado buscando la opción perfecta cuando cualquiera hubiera servido"},
+  Q38:{CR02:"Poner algo de fondo es el hábito por defecto al ponerme a trabajar", CR17:"Uso el ruido de fondo para adormecer la fricción y el silencio incómodo que exige empezar a pensar de verdad", CR16:"Hay siempre input externo compitiendo por mi atención mientras trabajo", CR08:"El silencio me genera incomodidad — necesito estímulo de fondo para arrancar"},
+  Q39:{CR08:"El scroll activa el sistema de recompensa de mi cerebro con cada item nuevo", CR09:"Lo inicio cuando la tarea que tenía por delante genera incomodidad o aburrimiento", CR02:"El acceso al scroll no tiene fricción — está siempre disponible en el bolsillo", CR21:"El scroll me da sensación de control cuando tengo algo incierto por delante"},
+  Q40:{CR02:"Consumo noticias en cualquier momento porque el acceso no tiene barreras ni horario", CR05:"Consumo noticias porque aparecen, no porque las haya elegido — el algoritmo decide qué me preocupa hoy", CR08:"Las noticias activan respuestas emocionales que satisfacen la búsqueda de estímulo", CR13:"Uso el drama de las noticias para anestesiar mis propias ansiedades y problemas sin resolver"},
+  Q41:{CR05:"Entro a reuniones sin saber qué quiero sacar de ellas — y salgo sin saber si las necesitaba", CR15:"Mi entorno normaliza las reuniones sin agenda como forma habitual de trabajar", CR19:"Acepto reuniones sin exigir agenda porque rechazarlas o pedirla me incomoda más que asistir", CR14:"Asisto a reuniones que podrían resolverse con un mensaje o delegarse a otro"},
+  Q42:{CR09:"Reorganizar es más cómodo que enfrentarme al trabajo real que ya tenía planificado", CR17:"Replanificar se siente como trabajar aunque no produce el output que necesito", CR08:"Un plan nuevo o reorganizado activa el entusiasmo que el trabajo repetitivo no da", CR11:"Necesito sentir que tengo el sistema perfecto antes de ponerme a ejecutar"},
+  Q43:{CR09:"Organizar en la app es más cómodo que hacer el trabajo que la app debería facilitar", CR17:"Un sistema bien organizado da sensación de productividad aunque no haya producido nada", CR01:"Uso la app para sentir que capturo y organizo, pero el sistema no cierra el bucle", CR08:"Abrir y ajustar la app de productividad satisface la necesidad de novedad y control"},
+  Q44:{CR04:"Tengo tantos frentes activos y no sé en cuál centrarme, así que los alterno", CR06:"No respeto los momentos de mayor energía para trabajo profundo y los fragmento", CR05:"Salto al frente más urgente o más visible en ese momento, aunque no sea el más importante", CR18:"Cambio de tarea antes de terminar ninguna — y así ninguna avanza realmente"},
+  Q45:{CR05:"Abro el ordenador y miro la lista esperando que algo me diga qué hacer — y eso me cuesta los primeros 20 minutos del bloque", CR10:"Empiezo a trabajar sin haber decidido qué hacer — y acabo haciendo lo que resulta más fácil o urgente", CR01:"Mis tareas están dispersas entre el email, el chat, la agenda y la cabeza — no hay un único sitio que me diga qué toca ahora", CR24:"Funciono con decisiones de la semana pasada que ya no reflejan la situación actual"},
+  Q46:{CR01:"Vuelvo a la tarea y necesito releer todo para recordar dónde estaba — pierdo minutos en cada interrupción", CR10:"Después de cada interrupción, tardo varios minutos en recuperar el hilo — y a veces me voy a otra tarea en vez de volver", CR23:"Confío en recordar dónde estaba — y a menudo no lo recuerdo con precisión", CR04:"Con varios frentes activos, cada interrupción me lleva a otro frente en vez de volver"},
+  Q47:{CR05:"Cada mañana decido qué hacer desde cero — y en caliente siempre gana lo urgente sobre lo importante", CR24:"Funciono con prioridades del momento en vez de decisiones tomadas en frío", CR01:"Empiezo la semana sin saber qué días van destinados a qué — improviso sobre la marcha", CR10:"La semana empieza igual que termina la anterior — sin revisión, sin plan, sin marco"},
+  Q48:{CR02:"Cualquiera puede interrumpirme en cualquier momento y yo lo permito — nunca he dejado claro cuándo estoy disponible", CR15:"El entorno normaliza interrumpir sin protocolo como algo aceptable", CR04:"Cada interrupción añade un frente cognitivo que compite con el que ya tenía", CR19:"Estoy disponible para todos en todo momento porque nunca he decidido cuándo no estarlo"},
+  Q49:{CR02:"Prefiero perder 10 minutos cada día sufriendo software lento antes que invertir 30 minutos una sola vez en arreglarlo", CR01:"La fricción técnica interrumpe el flujo de trabajo y genera micro-tareas no planificadas", CR17:"Asumo la fricción como parte normal del trabajo en vez de resolverla activamente", CR04:"Cada fallo técnico añade una tarea de resolución que compite con el trabajo real"},
+  Q50:{CR01:"Rehago desde cero tareas que ya he hecho decenas de veces — y nunca me he detenido a crear una plantilla", CR02:"Invierto tiempo en hacer lo mismo una y otra vez cuando podría haberlo resuelto una sola vez", CR10:"Cada tarea recurrente empieza con la misma pregunta — ¿por dónde empiezo? — aunque ya la haya respondido antes", CR23:"Confío en recordar cómo hacía la tarea la última vez — y eso consume energía innecesaria"},
+  Q51:{CR06:"No gestiono mi energía en función del tipo de tarea — todo tiene el mismo peso", CR05:"Uso mis mejores horas en reuniones y emails porque son lo que llega primero, no porque sean lo más importante", CR17:"Responder emails y atender reuniones se siente como trabajar aunque no sea lo de mayor impacto", CR12:"No mido qué produce mis mejores resultados — no sé cuándo estoy en mi mejor momento"},
+  Q52:{CR02:"Cada mañana gasto energía mental en decidir qué ponerme — una decisión que podría estar resuelta de antemano", CR05:"Abro el armario sin saber qué voy a elegir — y decido en caliente con la cabeza todavía despierta a medias", CR17:"Dedico energía mental a decisiones triviales que podrían estar automatizadas", CR25:"Lo que me pongo depende de cómo me siento esa mañana, no de un sistema previo"},
+  Q53:{CR02:"Guardo la ropa como cabe, no donde tiene sentido — y busco cada vez que necesito algo", CR01:"Nada tiene un lugar fijo en mi armario — cada vez que busco algo pierdo tiempo y paciencia", CR17:"El tiempo buscando ropa o accesorios es energía que no va al trabajo real", CR23:"Confío en recordar dónde está cada cosa — y eso genera búsqueda frecuente"},
+  Q54:{CR02:"La alimentación funciona por defecto — como lo que hay sin planificación previa", CR06:"No optimizo la alimentación en función de cómo afecta a mi rendimiento", CR01:"Decido qué comer 21 veces a la semana, en el momento, con hambre — y así salen las decisiones", CR17:"Decido qué comer en el momento, consumiendo energía mental en algo que podría estar resuelto"},
+  Q55:{CR01:"Abro la nevera con hambre a decidir qué cocinar — y la decisión la tomo en el peor momento posible", CR02:"Mi cocina y mi nevera funcionan sin un sistema planificado de antemano", CR06:"Lo que como depende de lo que hay, no de lo que me ayuda a rendir mejor", CR23:"Confío en improvisar con lo que haya en vez de tener el plan resuelto de antemano"},
+  Q56:{CR01:"Salgo de casa improvisando — y a veces ya en la calle recuerdo lo que olvidé", CR23:"Confío en recordar todo lo que necesito llevar — y eso genera búsquedas frecuentes", CR02:"Mi rutina de salida de casa no está diseñada — se improvisa cada día", CR10:"Cada vez que salgo repito el mismo caos de búsqueda — nunca lo he convertido en una rutina fija"},
+  Q57:{CR25:"Voy al ejercicio cuando me apetece o me siento con energía, no por un compromiso fijo", CR02:"El ejercicio no está integrado en mi rutina — depende de la decisión del momento", CR09:"Cuando no me apetece, la incomodidad de ir pesa más que el compromiso", CR05:"El ejercicio siempre cede ante lo que llega — nunca lo he tratado como un compromiso innegociable"},
+  Q58:{CR01:"Confío en que recordaré lo que se me ocurre — y pierdo ideas y tareas todos los días", CR23:"Confío en que recordaré las cosas importantes — y eso consume RAM mental constantemente", CR04:"Sin captura, cada tarea que surge añade carga cognitiva a los frentes ya activos", CR10:"Cuando se me ocurre algo, confío en el momento en vez de apuntarlo en el acto"},
+  Q59:{CR01:"Tengo pendientes sin sistema externo — el cerebro los mantiene activos en segundo plano", CR23:"Confío en mi memoria para gestionar la carga de tareas pendientes", CR04:"Cada pendiente no capturado es un frente cognitivo abierto que consume recursos", CR02:"Cuando surge una tarea y no la apunto, sé que probablemente la pierdo — y lo acepto"},
+  Q60:{CR01:"Las pestañas abiertas son bucles cognitivos pendientes que el sistema no ha cerrado", CR09:"Abrir una pestaña es más fácil que decidir en el momento si ese contenido vale mi tiempo", CR23:"Confío en que volveré a esas pestañas — y raramente lo hago", CR08:"Abrir pestañas de contenido nuevo satisface el impulso de novedad sin el compromiso de leer"},
+  Q61:{CR01:"La conversación pendiente es un bucle cognitivo abierto sin sistema de cierre", CR13:"Hay carga emocional asociada a esa conversación que estoy evitando activamente", CR09:"La incomodidad de tener esa conversación pesa más que el coste de no tenerla", CR21:"No sé cómo va a salir la conversación y esa incertidumbre me paraliza"},
+  Q62:{CR01:"Las conversaciones sin cierre quedan como bucles activos que el cerebro no puede cerrar", CR13:"La conversación sin cierre genera una incomodidad difusa que permanece activa", CR21:"El cierre de la conversación es incierto y prefiero dejarlo abierto a forzarlo", CR09:"Cerrar la conversación requiere un esfuerzo incómodo que estoy postergando"},
+  Q63:{CR01:"Esos objetos son bucles cognitivos físicos que el sistema no ha cerrado", CR02:"Permito que los objetos sin resolver se queden donde están — nunca fuerzo la decisión", CR23:"Me digo que ya me ocuparé — y llevan meses ahí exactamente por eso", CR09:"Resolver qué hacer con cada uno requiere decisiones incómodas que postergo"},
+  Q64:{CR01:"El cajón acumula lo que no tiene sistema — es el resultado de no haber decidido dónde va cada cosa", CR02:"Mi espacio no está organizado con un lugar específico para cada tipo de objeto", CR23:"El cajón existe porque confío en que ya lo ordenaré — sin fecha ni sistema", CR09:"Cerrar el cajón y no mirar es más fácil que tolerar la incomodidad de decidir qué tirar a la basura"},
+  Q65:{CR01:"El plan sin fecha es un bucle cognitivo abierto que el cerebro mantiene pendiente", CR19:"Dejo los planes abiertos porque concretarlos requiere una decisión que prefiero diferir", CR23:"Confío en que lo recordaré y lo concretaré — y raramente ocurre", CR05:"No concretamos fecha porque ninguno de los dos quiere tomar la iniciativa de decir cuándo"},
+  Q66:{CR05:"Sin criterio sobre qué me apetece o cuánto tiempo quiero dedicar, evito decidir", CR19:"No tengo un hábito de proponer — espero a que otro tome la iniciativa", CR02:"La indecisión es el comportamiento por defecto cuando no hay un sistema previo", CR08:"Dejar que otro decida elimina la carga de la decisión pero añade espera e incertidumbre"},
+  Q67:{CR19:"No tengo claro qué decisiones son mías y cuáles debo devolver a quien corresponde", CR05:"Asumo decisiones que no son mías porque devolvérselas al otro me parece más difícil que resolverlas yo", CR14:"Resuelvo lo que otros podrían resolver porque es más rápido que explicar o delegar", CR11:"Me cuesta decir que algo no me corresponde — quiero ser visto como alguien resolutivo"},
+  Q68:{CR02:"Nunca he acordado con mis hijos cuándo pueden interrumpirme — así que lo hacen siempre", CR04:"Cada interrupción rompe el frente de trabajo activo y añade carga de reenganche", CR01:"Mis hijos no saben cuándo pueden interrumpirme porque yo tampoco lo tengo definido", CR19:"Estoy disponible para mis hijos en todo momento durante el trabajo porque nunca he acordado otra cosa"},
+  Q69:{CR01:"La gestión familiar no tiene sistema externo — se lleva en la cabeza o se improvisa", CR04:"La carga mental familiar es un frente cognitivo adicional que compite con el trabajo", CR23:"Confío en recordar citas, logística y compras — y eso genera olvidos y tensión", CR14:"Gestiono personalmente cosas que podrían estar sistematizadas o repartidas"},
+  Q70:{CR13:"La culpa es una carga emocional activa que consume recursos mientras trabajo", CR20:"Hay una tensión real entre lo que digo que priorizo y cómo distribuyo el tiempo", CR11:"Necesito ser visto — o verme — como buen padre antes que como alguien que trabaja", CR09:"La culpa hace que el trabajo sea menos satisfactorio y más difícil de sostener"},
+  Q71:{CR04:"Uso los fragmentos de 45 minutos como excusa perfecta para no hacer trabajo profundo, convenciéndome de que no hay tiempo suficiente", CR06:"El tiempo disponible no se alinea con el tipo de tarea que requiere mayor energía", CR01:"Uso los fragmentos de tiempo en lo primero que aparece — y al final del día no ha avanzado nada importante", CR18:"Los fragmentos se van en email, WhatsApp y cosas pequeñas — nunca en lo que realmente importa"},
+  Q72:{CR01:"Miro el saldo y no sé si ese dinero es mío o ya está comprometido en algo — y vivo con esa ambigüedad", CR05:"Gasto sin saber exactamente cuánto tengo libre — y a veces la cuenta me da la sorpresa", CR13:"La ambigüedad financiera genera una ansiedad de fondo que opera sin que lo notes", CR23:"Confío en tener una idea aproximada de mis finanzas sin haberlo verificado con datos"},
+  Q73:{CR01:"Ahorro lo que sobra al final del mes — y casi nunca sobra nada", CR02:"La decisión de cuánto ahorrar se toma cada mes en caliente — no está sistematizada", CR23:"Confío en que ahorraré lo que sobre al final del mes — y raramente sobra", CR05:"Cada mes el ahorro compite con el gasto — y el gasto casi siempre tiene más argumentos en caliente"},
+  Q74:{CR01:"Pago suscripciones que no uso porque cancelarlas requiere 5 minutos que siempre postergo", CR09:"Cancelar requiere un pequeño esfuerzo incómodo que siempre se pospone", CR23:"Confío en recordar cuáles tengo activas y cuáles uso — y eso raramente es preciso", CR05:"Sin criterio claro de qué me aporta valor, mantengo todo por si acaso"},
+  Q75:{CR05:"Entro a comprar sin decidir de antemano qué quiero — y el proceso de elegir se convierte en el objetivo", CR08:"Me engaño pensando que soy un comprador analítico, cuando en realidad solo soy adicto al pequeño subidón que da seguir buscando", CR02:"Compro según lo que veo en el momento, no según lo que había decidido necesitar", CR19:"Decido qué comprar en el punto de compra — el peor momento para tomar esa decisión"},
+  Q76:{CR05:"Sin un criterio de cuándo algo está suficientemente bien, sigo buscando la opción perfecta", CR02:"Reviso el precio otra vez porque no me he dado permiso para cerrar la decisión", CR22:"Confundo un problema de decisión — comprar o no — con un problema de información — buscar más", CR08:"Revisar el precio por quinta vez me da un chute de dopamina barata que confundo con ser inteligente con mi dinero"},
+  Q77:{CR13:"La situación financiera pendiente genera una carga emocional de fondo constante", CR09:"Revisar las deudas o cuentas pendientes requiere enfrentarse a algo incómodo", CR21:"La incertidumbre sobre el estado real de esas cuentas me paraliza en vez de activarme", CR05:"Evito mirar las cuentas pendientes — y cada día que pasa la incomodidad de abrirlas crece"},
+  Q78:{CR08:"Miro las gráficas compulsivamente para sentir la emoción de que pasan cosas, en lugar de hacer el trabajo aburrido que realmente mueve la aguja", CR22:"Confundo monitorizar información con tomar decisiones — son cosas distintas", CR05:"Reviso las métricas múltiples veces al día aunque sé que no voy a actuar — por si acaso", CR09:"Revisar métricas es más inmediato y cómodo que el trabajo de mayor impacto"},
+  Q79:{CR02:"He dejado que el escritorio se llene — y nunca me he sentado a vaciarlo deliberadamente", CR01:"Cada cosa acaba donde cabe, no donde tiene sentido — y el caos visual me sigue a todas horas", CR17:"Dejo que la basura física y digital se acumule porque limpiar no me da la gratificación instantánea de estar trabajando", CR23:"Confío en que encontraré lo que necesito aunque no esté organizado"},
+  Q80:{CR02:"Mi espacio de trabajo ha crecido por acumulación, no por diseño — y lo acepto como está", CR01:"Nada tiene un lugar fijo — busco lo que necesito cada vez que lo necesito", CR23:"Confío en recordar dónde está cada cosa aunque no tenga un lugar fijo", CR17:"El desorden no me parece un problema real mientras puedo trabajar"},
+  Q81:{CR02:"Guardo los archivos donde caen y luego los busco — y acepto eso como parte del flujo de trabajo", CR01:"Cada archivo tiene un nombre diferente y está en un sitio diferente — encontrarlos es siempre una aventura", CR23:"Confío en recordar dónde guardé cada archivo — y eso falla con frecuencia", CR10:"La búsqueda de documentos interrumpe mis bloques de trabajo repetidamente"},
+  Q82:{CR01:"Esos objetos son bucles cognitivos físicos que el sistema no ha cerrado", CR09:"Resolver qué hacer con cada uno requiere una decisión incómoda que postergo", CR23:"Me digo que ya me ocuparé — y llevan meses ahí exactamente por eso", CR02:"Permito que los objetos sin resolver sigan ahí porque tomar la decisión sobre ellos incomoda más que ignorarlos"},
+};
+
+
+// ─── CATEGORÍAS ───────────────────────────────────────────────────────────────
+const CATS={
+bio:{em:'🧬',name:'Biología y energía base'},
+psi:{em:'🧠',name:'Psicología y gestión emocional'},
+tec:{em:'📱',name:'Tecnología y dispositivos'},
+com:{em:'💬',name:'Comunicación y mensajería'},
+oci:{em:'🎬',name:'Ocio y consumo de contenido'},
+ope:{em:'⚙️',name:'Fricciones operativas'},
+cot:{em:'👗',name:'Decisiones cotidianas'},
+buc:{em:'🧩',name:'Bucles cognitivos abiertos'},
+soc:{em:'👥',name:'Gestión social y de agenda'},
+fam:{em:'👨‍👧',name:'Familia e hijos'},
+fin:{em:'💰',name:'Finanzas y compras'},
+ent:{em:'🏠',name:'Monitoreo y entorno físico'}
+};
+
+// ─── PREGUNTAS ────────────────────────────────────────────────────────────────
+const QS=[
+{id:"Q01",cat:"bio",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia notas bajón de energía o niebla mental 1-2 horas después de comer?",cs:["CR07","CR06","CR17","CR25"]},
+{id:"Q02",cat:"bio",tipo:"qty",inv:false,nd:false,unit:"litros",thresh:1.5,tdir:"lt",q:"¿Cuántos litros de agua bebes al día de media?",nota:"Umbral de alerta: menos de 1,5 litros",cs:["CR07","CR06","CR23","CR25"]},
+{id:"Q03",cat:"bio",tipo:"yn",inv:false,nd:false,q:"¿Usas pantallas en la hora antes de dormir de forma habitual?",cs:["CR07","CR02","CR08","CR09"]},
+{id:"Q04",cat:"bio",tipo:"yn",inv:false,nd:false,q:"¿Usas más de una alarma para despertar?",cs:["CR07","CR02","CR10","CR25"]},
+{id:"Q05",cat:"bio",tipo:"yn",inv:false,nd:false,q:"¿El teléfono es lo último que miras antes de dormir?",cs:["CR07","CR08","CR09","CR02"]},
+{id:"Q06",cat:"bio",tipo:"yn",inv:false,nd:false,q:"¿Tomas más de 3 cafés al día o alguno después de las 14h?",cs:["CR07","CR06","CR09","CR17"]},
+{id:"Q07",cat:"bio",tipo:"yn",inv:false,nd:false,q:"¿Pasas tu jornada habitual sin recibir luz natural?",cs:["CR07","CR02","CR06","CR17"]},
+{id:"Q08",cat:"bio",tipo:"yn",inv:false,nd:true,q:"¿Trabajas más de una hora seguida en espacios cerrados sin ventilar?",nota:"Sin datos también es señal de alerta",cs:["CR02","CR07","CR17","CR06"]},
+{id:"Q09",cat:"bio",tipo:"yn",inv:false,nd:false,q:"¿Pasas la jornada sin ningún momento de descanso activo — sin pantallas ni trabajo?",cs:["CR07","CR10","CR06","CR25"]},
+{id:"Q10",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia aceptas compromisos que no quieres por inercia o presión social?",cs:["CR05","CR19","CR11","CR20"]},
+{id:"Q11",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia pospones un no que ya sabes que vas a dar?",cs:["CR21","CR01","CR13","CR09"]},
+{id:"Q12",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia dedicas tiempo desproporcionado a detalles de poco valor real?",cs:["CR09","CR21","CR11","CR25"]},
+{id:"Q13",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia le das vueltas a un problema sin intención real de resolverlo ahora?",cs:["CR13","CR09","CR25","CR21"]},
+{id:"Q14",cat:"psi",tipo:"yn",inv:false,nd:false,q:"¿Hay personas en tu entorno habitual que te drenan de forma sistemática?",cs:["CR15","CR11","CR20","CR05"]},
+{id:"Q15",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia te apuntas a cursos, eventos o libros sin un objetivo claro?",cs:["CR05","CR26","CR08","CR19"]},
+{id:"Q16",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia piensas en el resultado de algo antes de ponerte a ejecutarlo?",cs:["CR09","CR08","CR25","CR17"]},
+{id:"Q17",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia incumples compromisos que te hiciste a ti mismo?",cs:["CR11","CR20","CR25","CR09"]},
+{id:"Q18",cat:"psi",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia consumes contenido sobre algo que vas a hacer en vez de hacerlo directamente?",cs:["CR09","CR17","CR08","CR05"]},
+{id:"Q19",cat:"tec",tipo:"yn",inv:true,nd:false,q:"¿Tienes desactivadas todas o casi todas las notificaciones del móvil — WhatsApp, Instagram, correo, etc.?",nota:"No = señal de alerta",cs:["CR02","CR08","CR09","CR04"]},
+{id:"Q20",cat:"tec",tipo:"yn",inv:false,nd:false,q:"¿Tienes el móvil visible sobre la mesa cuando trabajas?",cs:["CR02","CR08","CR09","CR16"]},
+{id:"Q21",cat:"tec",tipo:"yn",inv:false,nd:false,q:"¿El móvil es lo primero que miras al despertar?",cs:["CR02","CR08","CR10","CR09"]},
+{id:"Q22",cat:"tec",tipo:"yn",inv:false,nd:false,q:"¿Tienes el teléfono en la mesa durante comidas o conversaciones?",cs:["CR02","CR20","CR08","CR09"]},
+{id:"Q23",cat:"tec",tipo:"qty",inv:false,nd:true,unit:"veces",thresh:20,tdir:"gt",q:"¿Cuántas veces al día abres el móvil sin un propósito claro? Revísalo en los ajustes de pantalla.",nota:"Sin datos = señal de alerta. Umbral: más de 20 veces",cs:["CR08","CR09","CR02","CR21"]},
+{id:"Q24",cat:"tec",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia tienes varias tareas activas a la vez en distintas apps o ventanas?",cs:["CR04","CR08","CR09","CR17"]},
+{id:"Q25",cat:"tec",tipo:"yn",inv:false,nd:false,q:"¿Tienes varias apps que hacen la misma función? Por ejemplo: Notion y Word, Telegram y WhatsApp, Google Tasks y Todoist.",cs:["CR02","CR05","CR04","CR17"]},
+{id:"Q26",cat:"tec",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia recibes notificaciones de calendario cuando ya no puedes actuar sobre ellas?",cs:["CR02","CR01","CR10","CR03"]},
+{id:"Q27",cat:"tec",tipo:"yn",inv:true,nd:false,q:"¿Tienes un gestor de contraseñas instalado y en uso?",nota:"No = señal de alerta",cs:["CR02","CR23","CR01","CR10"]},
+{id:"Q28",cat:"com",tipo:"yn",inv:false,nd:false,q:"¿Respondes mensajes de WhatsApp en tiempo real como norma, sin horarios fijos?",cs:["CR02","CR08","CR01","CR09"]},
+{id:"Q29",cat:"com",tipo:"yn",inv:true,nd:false,q:"¿Tienes un horario establecido para revisar el email?",nota:"No = señal de alerta",cs:["CR02","CR05","CR19","CR09"]},
+{id:"Q30",cat:"com",tipo:"yn",inv:false,nd:false,q:"¿Gestionas el correo sin sistema, reabriendo el mismo email varias veces antes de actuar?",cs:["CR01","CR03","CR02","CR10"]},
+{id:"Q31",cat:"com",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia intentas tomar decisiones colectivas a través de chats de grupo?",cs:["CR02","CR19","CR04","CR05"]},
+{id:"Q32",cat:"com",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia abres y cierras un mensaje difícil sin responder, postergándolo?",cs:["CR01","CR21","CR09","CR13"]},
+{id:"Q33",cat:"com",tipo:"yn",inv:false,nd:false,q:"¿Usas el feed de redes sociales como fuente habitual de información?",cs:["CR08","CR02","CR09","CR16"]},
+{id:"Q34",cat:"com",tipo:"yn",inv:false,nd:false,q:"¿Sigues a más gente de la que te aporta valor real de forma consistente?",cs:["CR05","CR19","CR02","CR08"]},
+{id:"Q35",cat:"com",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia consumes los logros o el contenido de otros de forma habitual?",cs:["CR08","CR11","CR15","CR20"]},
+{id:"Q36",cat:"oci",tipo:"qty",inv:false,nd:false,unit:"minutos",thresh:15,tdir:"gt",q:"¿Cuántos minutos tardas de media en elegir qué ver cuando abres Netflix u otro streaming?",nota:"Umbral de alerta: más de 15 minutos",cs:["CR02","CR05","CR08","CR19"]},
+{id:"Q37",cat:"oci",tipo:"qty",inv:false,nd:false,unit:"minutos",thresh:5,tdir:"gt",q:"¿Cuántos minutos tardas de media en elegir playlist o podcast?",nota:"Umbral de alerta: más de 5 minutos",cs:["CR02","CR08","CR09","CR05"]},
+{id:"Q38",cat:"oci",tipo:"yn",inv:false,nd:false,q:"¿Pones música con letra o la televisión mientras trabajas en tareas que requieren concentración?",cs:["CR02","CR17","CR16","CR08"]},
+{id:"Q39",cat:"oci",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia haces scroll sin saber qué estás buscando?",cs:["CR08","CR09","CR02","CR21"]},
+{id:"Q40",cat:"oci",tipo:"yn",inv:true,nd:false,q:"¿Tienes un horario fijo para informarte de las noticias?",nota:"No = señal de alerta",cs:["CR02","CR05","CR08","CR13"]},
+{id:"Q41",cat:"ope",tipo:"yn",inv:true,nd:false,q:"¿Tus reuniones tienen agenda y entregable definido antes de empezar?",nota:"No = señal de alerta",cs:["CR05","CR15","CR19","CR14"]},
+{id:"Q42",cat:"ope",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia reorganizas o replanificas lo que ya tenías planificado en vez de ejecutarlo directamente?",cs:["CR09","CR17","CR08","CR11"]},
+{id:"Q43",cat:"ope",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia usas apps de productividad más para sentir que organizas que para ejecutar?",cs:["CR09","CR17","CR01","CR08"]},
+{id:"Q44",cat:"ope",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia cambias bruscamente entre tipos de trabajo muy distintos en el mismo bloque?",cs:["CR04","CR06","CR05","CR18"]},
+{id:"Q45",cat:"ope",tipo:"yn",inv:true,nd:false,q:"¿Sabes con exactitud en qué vas a trabajar cuando empiezas un bloque de trabajo?",nota:"No = señal de alerta",cs:["CR05","CR10","CR01","CR24"]},
+{id:"Q46",cat:"ope",tipo:"yn",inv:true,nd:false,q:"¿Tienes un protocolo para retomar el trabajo después de una interrupción?",nota:"No = señal de alerta",cs:["CR01","CR10","CR23","CR04"]},
+{id:"Q47",cat:"ope",tipo:"yn",inv:true,nd:false,q:"¿Planificas tus semanas con antelación para saber qué hacer cada mañana sin decidirlo en el momento?",nota:"No = señal de alerta",cs:["CR05","CR24","CR01","CR10"]},
+{id:"Q48",cat:"ope",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia te interrumpen en tu espacio de trabajo sin ningún protocolo acordado?",cs:["CR02","CR15","CR04","CR19"]},
+{id:"Q49",cat:"ope",tipo:"yn",inv:false,nd:false,q:"¿El software o las herramientas que usas habitualmente te generan fricción o van lentos?",cs:["CR02","CR01","CR17","CR04"]},
+{id:"Q50",cat:"ope",tipo:"yn",inv:true,nd:false,q:"¿Tienes plantillas para las tareas que repites de forma habitual?",nota:"No = señal de alerta",cs:["CR01","CR02","CR10","CR23"]},
+{id:"Q51",cat:"ope",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia usas tu mejor bloque de energía del día en email, reuniones o tareas administrativas?",cs:["CR06","CR05","CR17","CR12"]},
+{id:"Q52",cat:"cot",tipo:"yn",inv:false,nd:false,q:"¿Decides qué ropa ponerte cada día sin un sistema previo establecido?",cs:["CR02","CR05","CR17","CR25"]},
+{id:"Q53",cat:"cot",tipo:"yn",inv:true,nd:false,q:"¿Tu armario está organizado y encuentras lo que necesitas sin tener que buscarlo?",nota:"No = señal de alerta",cs:["CR02","CR01","CR17","CR23"]},
+{id:"Q54",cat:"cot",tipo:"yn",inv:true,nd:false,q:"¿Tienes un menú semanal planificado de antemano?",nota:"No = señal de alerta",cs:["CR02","CR06","CR01","CR17"]},
+{id:"Q55",cat:"cot",tipo:"yn",inv:false,nd:false,q:"¿Cocinas sin plan previo, decidiendo en el momento con lo que hay?",cs:["CR01","CR02","CR06","CR23"]},
+{id:"Q56",cat:"cot",tipo:"yn",inv:true,nd:false,q:"¿Tienes una rutina fija al salir de casa que evita buscar llaves, cargador u otros objetos?",nota:"No = señal de alerta",cs:["CR01","CR23","CR02","CR10"]},
+{id:"Q57",cat:"cot",tipo:"yn",inv:true,nd:false,q:"¿Tienes un compromiso fijo de ejercicio físico que no decides día a día?",nota:"No = señal de alerta",cs:["CR25","CR02","CR09","CR05"]},
+{id:"Q58",cat:"buc",tipo:"yn",inv:true,nd:false,q:"¿Tienes un sistema donde apuntas cualquier tarea o idea que se te ocurre en el momento?",nota:"No = señal de alerta",cs:["CR01","CR23","CR04","CR10"]},
+{id:"Q59",cat:"buc",tipo:"qty",inv:false,nd:true,unit:"pendientes",thresh:5,tdir:"gt",q:"¿Cuántos pendientes tienes ahora mismo en la cabeza sin apuntar en ningún sitio?",nota:"Sin datos = señal de alerta. Umbral: más de 5",cs:["CR01","CR23","CR04","CR02"]},
+{id:"Q60",cat:"buc",tipo:"qty",inv:false,nd:true,unit:"pestañas",thresh:3,tdir:"gt",q:"¿Cuántas pestañas del navegador tienes abiertas ahora mismo para leer luego?",nota:"Sin datos = señal de alerta. Umbral: más de 3",cs:["CR01","CR09","CR23","CR08"]},
+{id:"Q61",cat:"buc",tipo:"yn",inv:false,nd:false,q:"¿Tienes conversaciones pendientes que llevas posponiendo tener?",cs:["CR01","CR13","CR09","CR21"]},
+{id:"Q62",cat:"buc",tipo:"yn",inv:false,nd:false,q:"¿Tienes varias conversaciones — con socios, familia o amigos — que quedaron a medias sin cierre claro?",cs:["CR01","CR13","CR21","CR09"]},
+{id:"Q63",cat:"buc",tipo:"yn",inv:false,nd:false,q:"¿Hay objetos acumulados en casa que te generan la sensación de que deberías hacer algo con ellos?",cs:["CR01","CR02","CR23","CR09"]},
+{id:"Q64",cat:"buc",tipo:"yn",inv:false,nd:false,q:"¿Tienes algún cajón o espacio en casa donde acumulas cosas sin orden?",cs:["CR01","CR02","CR23","CR17"]},
+{id:"Q65",cat:"soc",tipo:"yn",inv:false,nd:false,q:"¿Tienes planes pendientes con personas sin fecha ni hora concreta acordada?",cs:["CR01","CR19","CR23","CR05"]},
+{id:"Q66",cat:"soc",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia evitas proponer o decidir dónde quedar, esperando que lo haga otro?",cs:["CR05","CR19","CR02","CR08"]},
+{id:"Q67",cat:"soc",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia acabas resolviendo decisiones que corresponden a otras personas?",cs:["CR19","CR05","CR14","CR11"]},
+{id:"Q68",cat:"fam",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia recibes interrupciones de tus hijos durante tu tiempo de trabajo sin un protocolo acordado?",cs:["CR02","CR04","CR01","CR19"]},
+{id:"Q69",cat:"fam",tipo:"yn",inv:true,nd:false,q:"¿Tienes un sistema donde capturas toda la gestión familiar — citas médicas, logística escolar, compras?",nota:"No = señal de alerta",cs:["CR01","CR04","CR23","CR14"]},
+{id:"Q70",cat:"fam",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia sientes culpa cuando trabajas en tu tiempo personal?",cs:["CR13","CR20","CR11","CR09"]},
+{id:"Q71",cat:"fam",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia tu tiempo disponible llega en fragmentos de menos de 45 minutos, sin bloques continuos para trabajar en algo importante?",cs:["CR04","CR06","CR01","CR18"]},
+{id:"Q72",cat:"fin",tipo:"yn",inv:true,nd:false,q:"¿Tienes tus saldos bancarios asignados a categorías o gastos futuros concretos?",nota:"No = señal de alerta",cs:["CR01","CR05","CR13","CR23"]},
+{id:"Q73",cat:"fin",tipo:"yn",inv:true,nd:false,q:"¿Tienes automatizado cuánto ahorras e inviertes cada mes?",nota:"No = señal de alerta",cs:["CR01","CR02","CR23","CR05"]},
+{id:"Q74",cat:"fin",tipo:"yn",inv:false,nd:false,q:"¿Tienes suscripciones activas que no usas de forma habitual?",cs:["CR01","CR09","CR23","CR05"]},
+{id:"Q75",cat:"fin",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia compras algo sin haber decidido de antemano qué querías exactamente?",cs:["CR05","CR08","CR02","CR19"]},
+{id:"Q76",cat:"fin",tipo:"scale",inv:false,nd:false,q:"¿Con qué frecuencia revisas el precio de algo varias veces sin un criterio claro de cuándo comprar?",cs:["CR05","CR02","CR22","CR08"]},
+{id:"Q77",cat:"fin",tipo:"yn",inv:false,nd:false,q:"¿Hay deudas, cuentas pendientes o situaciones fiscales que evitas revisar activamente?",cs:["CR13","CR09","CR21","CR05"]},
+{id:"Q78",cat:"ent",tipo:"qty",inv:false,nd:false,unit:"veces",thresh:2,tdir:"gt",q:"¿Cuántas veces al día revisas bolsa, criptos, analíticas o métricas sin poder tomar acción inmediata?",nota:"Umbral de alerta: más de 2 veces",cs:["CR08","CR22","CR05","CR09"]},
+{id:"Q79",cat:"ent",tipo:"yn",inv:true,nd:false,q:"¿Tienes tu escritorio — físico y digital — libre de elementos que no necesitas a la vista?",nota:"No = señal de alerta",cs:["CR02","CR01","CR17","CR23"]},
+{id:"Q80",cat:"ent",tipo:"yn",inv:false,nd:false,q:"¿Tu espacio de trabajo está desorganizado, sin cada cosa en su lugar?",cs:["CR02","CR01","CR23","CR17"]},
+{id:"Q81",cat:"ent",tipo:"yn",inv:false,nd:false,q:"¿Buscas documentos de forma habitual porque no están donde esperarías?",cs:["CR02","CR01","CR23","CR10"]},
+{id:"Q82",cat:"ent",tipo:"yn",inv:false,nd:false,q:"¿Hay objetos en tu casa que te generan incomodidad o culpa cada vez que los ves porque llevas tiempo sin resolverlos?",cs:["CR01","CR09","CR23","CR02"]}
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const SCALE_THRESH=7;
+const st={phase:0,kidsFilter:null,ans:{},nd:new Set(),causes:{},idx:0,shuffled:null};
+
+// ─── ALARM LOGIC ─────────────────────────────────────────────────────────────
+function isAlarm(q){
+  if(st.nd.has(q.id)) return q.nd; // sin datos — alarm only if nd:true on question
+  const v=st.ans[q.id];
+  if(v===undefined||v===null) return false;
+  if(q.tipo==='scale') return v>=SCALE_THRESH;
+  if(q.tipo==='yn') return q.inv ? v==='no' : v==='si';
+  if(q.tipo==='qty'){
+    const n=parseFloat(v);
+    if(isNaN(n)) return false;
+    return q.tdir==='gt' ? n>q.thresh : n<q.thresh;
+  }
+  return false;
+}
+
+function getAlarmQs(){ return QS.filter(q=>isAlarm(q)); }
+function getNdAlarmQs(){ return QS.filter(q=>st.nd.has(q.id)&&q.nd); }
+function getScore(q){
+  if(st.nd.has(q.id)) return q.nd?8:0;
+  const v=st.ans[q.id];
+  if(q.tipo==='scale') return v||0;
+  if(q.tipo==='yn') return isAlarm(q)?8:1;
+  if(q.tipo==='qty'){
+    const n=parseFloat(v);
+    return isAlarm(q)?8:isNaN(n)?0:Math.min(n,8);
+  }
+  return 0;
+}
+
+function computeDiag(){
+  const aq=getAlarmQs();
+  // Step 1: accumulate raw weights per CR
+  const weights={};
+  aq.forEach(q=>{
+    const score=getScore(q);
+    const sel=st.causes[q.id]||[];
+    sel.forEach(cr=>{ weights[cr]=(weights[cr]||0)+score; });
+  });
+  // Step 2: normalize CR by saturation% (cap at 100)
+  const crSat={};
+  Object.keys(weights).forEach(cr=>{
+    const maxP=CR_MAX[cr]||1;
+    crSat[cr]=Math.min(Math.round(weights[cr]/maxP*100),100);
+  });
+  const topCR=Object.entries(crSat).sort((a,b)=>b[1]-a[1]);
+  // Step 3: accumulate SC weights
+  const scW={};
+  Object.entries(SC).forEach(([sid,sv])=>{
+    sv.cs.forEach(cr=>{ if(weights[cr]) scW[sid]=(scW[sid]||0)+weights[cr]; });
+  });
+  // Step 4: normalize SC by saturation% with dynamic max (kids filter)
+  const scSat={};
+  Object.entries(SC).forEach(([sid])=>{
+    const base=SC_MAX_BASE[sid]||1;
+    const reduction=(st.kidsFilter===false)?(SC_MAX_REDUCTION[sid]||0):0;
+    const maxP=Math.max(base-reduction,1);
+    scSat[sid]=Math.min(Math.round((scW[sid]||0)/maxP*100),100);
+  });
+  const topSC=Object.entries(scSat).sort((a,b)=>b[1]-a[1]);
+  const maxSat=topSC[0]?topSC[0][1]:0;
+  const isStructural=maxSat>=40;
+  return{topCR,topSC,scSat,crSat,weights,isStructural,maxSat};
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function setProgress(p){
+  document.getElementById('prog-bar').style.width=p+'%';
+  const labels={0:'Inicio',0.5:'Filtro inicial',1:'Fase 1 — Situaciones',2:'Fase 2 — Causas',3:'Diagnóstico'};
+  document.getElementById('phase-ind').textContent=labels[st.phase]||'';
+}
+
+function render(){
+  const el=document.getElementById('app');
+  if(st.phase===0){el.innerHTML=renderP0();setProgress(0);}
+  else if(st.phase===0.5){el.innerHTML=renderKids();setProgress(10);attachKids();}
+  else if(st.phase===1){el.innerHTML=renderP1();setProgress(25);attachP1();}
+  else if(st.phase===2){
+    const aq=getAlarmQs();
+    if(st.idx>=aq.length){st.phase=3;render();return;}
+    el.innerHTML=renderP2();setProgress(70);attachP2();
+  }
+  else{el.innerHTML=renderP3();setProgress(100);}
+  window.scrollTo(0,0);
+}
+
+// PHASE 0 — INTRO
+function renderP0(){
+  return`<div class="card">
+  <div class="phase-label">Potenciación Humana by Makoli</div>
+  <div class="phase-title">Autodiagnóstico</div>
+  <div class="phase-desc">82 situaciones · 26 causas raíz · 4 fases · 10-15 minutos</div>
+  <div class="intro-steps">
+  <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Responde cada situación.</strong> Hay preguntas de grado (del 1 al 10), de sí o no, y de cantidad. Marca "Sin datos" solo si genuinamente no puedes saberlo.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Para las situaciones más relevantes</strong>, selecciona las causas que las explican. Puedes marcar varias — la causa puede ser múltiple.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text"><strong>El sistema agrega y pondera</strong> tus causas dominantes y genera el diagnóstico con informe descargable.</div></div>
+  </div>
+  <div class="callout">Sé honesto. El diagnóstico vale lo que valen tus respuestas.</div>
+  <div class="btn-row"><button class="btn primary" onclick="st.phase=0.5;render()">Comenzar →</button></div>
+  </div>`;
+}
+
+
+// PHASE 0.5 — KIDS FILTER
+function renderKids(){
+  return`<div class="card">
+  <div class="phase-label">Antes de empezar</div>
+  <div class="phase-title">Una pregunta de contexto</div>
+  <div class="phase-desc" style="max-width:100%">La respuesta ajusta el cuestionario y el cálculo del diagnóstico. No afecta a los demás resultados.</div>
+  <div style="font-size:16px;font-weight:600;color:var(--navy);margin:20px 0 16px;line-height:1.5">¿Tienes hijos menores de 12 años viviendo contigo?</div>
+  <div class="yn-wrap">
+  <button class="yn-btn${st.kidsFilter===true?' sel-si':''}" id="kids-si">Sí</button>
+  <button class="yn-btn${st.kidsFilter===false?' sel-no':''}" id="kids-no">No</button>
+  </div>
+  <div class="btn-row" style="margin-top:24px">
+  <button class="btn primary" id="kids-next" ${st.kidsFilter===null?'disabled style="opacity:.35;cursor:not-allowed"':''}>Continuar →</button>
+  </div>
+  </div>`;
+}
+
+function attachKids(){
+  document.getElementById('kids-si').addEventListener('click',()=>{st.kidsFilter=true;render();});
+  document.getElementById('kids-no').addEventListener('click',()=>{st.kidsFilter=false;render();});
+  const btn=document.getElementById('kids-next');
+  if(btn&&st.kidsFilter!==null){
+    btn.addEventListener('click',()=>{st.phase=1;render();});
+  }
+}
+
+// PHASE 1 — QUESTIONS
+function renderP1(){
+  if(!st.shuffled){
+    st.shuffled=[...QS];
+    for(let i=st.shuffled.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [st.shuffled[i],st.shuffled[j]]=[st.shuffled[j],st.shuffled[i]];
+    }
+  }
+  let html=`<div class="phase-label">Fase 1 de 3</div>
+  <div class="phase-title">¿Cómo te afectan estas situaciones?</div>
+  <div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--navy)"></div>Grado 1–10</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Sí / No</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>Cantidad</div>
+  </div>`;
+  st.shuffled.forEach(q=>{
+    const isNd=st.nd.has(q.id);
+    html+=`<div class="q-row">
+    <div class="q-text">${q.q}</div>
+    <div class="q-controls${isNd?' disabled':''}">
+      ${renderControl(q)}
+      ${q.nd?`<label class="nd-label"><input type="checkbox" class="nd-cb" data-id="${q.id}" ${isNd?'checked':''}> Sin datos</label>`:''}
+    </div>
+    </div>`;
+  });
+  html+=`<div class="btn-row"><button class="btn primary" id="p1next">Continuar →</button></div>`;
+  return html;
+}
+
+function renderControl(q){
+  const v=st.ans[q.id];
+  const isNd=st.nd.has(q.id);
+  if(q.tipo==='scale'){
+    const boxes=[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="sbox${v===n?' sel':''}" data-id="${q.id}" data-v="${n}">${n}</div>`).join('');
+    return`<div class="scale-wrap">${boxes}</div><div class="scale-labels">1 = poco o nada · 10 = mucho o completamente</div>`;
+  }
+  if(q.tipo==='yn'){
+    const si=v==='si', no=v==='no';
+    return`<div class="yn-wrap">
+    <button class="yn-btn${si?' sel-si':''}" data-id="${q.id}" data-yn="si">Sí</button>
+    <button class="yn-btn${no?' sel-no':''}" data-id="${q.id}" data-yn="no">No</button>
+    </div>`;
+  }
+  if(q.tipo==='qty'){
+    const val=v!==undefined&&v!==null?v:'';
+    return`<div class="qty-wrap">
+    <input type="number" class="qty-input" data-id="${q.id}" value="${val}" min="0" placeholder="0">
+    <span class="qty-unit">${q.unit}</span>
+    </div>`;
+  }
+  return '';
+}
+
+function attachP1(){
+  // Scale
+  document.querySelectorAll('.sbox').forEach(b=>{
+    b.addEventListener('click',function(){
+      const id=this.dataset.id,v=parseInt(this.dataset.v);
+      if(st.nd.has(id)) return;
+      st.ans[id]=v;
+      document.querySelectorAll(`.sbox[data-id="${id}"]`).forEach(x=>x.classList.toggle('sel',parseInt(x.dataset.v)===v));
+    });
+  });
+  // YN
+  document.querySelectorAll('.yn-btn').forEach(b=>{
+    b.addEventListener('click',function(){
+      const id=this.dataset.id,yn=this.dataset.yn;
+      if(st.nd.has(id)) return;
+      st.ans[id]=yn;
+      document.querySelectorAll(`.yn-btn[data-id="${id}"]`).forEach(x=>{
+        x.classList.remove('sel-si','sel-no');
+        if(x.dataset.yn===yn) x.classList.add(yn==='si'?'sel-si':'sel-no');
+      });
+    });
+  });
+  // Qty
+  document.querySelectorAll('.qty-input').forEach(inp=>{
+    inp.addEventListener('input',function(){
+      if(st.nd.has(this.dataset.id)) return;
+      st.ans[this.dataset.id]=this.value===''?null:parseFloat(this.value);
+    });
+  });
+  // No data
+  document.querySelectorAll('.nd-cb').forEach(cb=>{
+    cb.addEventListener('change',function(){
+      const id=this.dataset.id;
+      const ctrl=this.closest('.q-controls');
+      if(this.checked){
+        st.nd.add(id);
+        if(ctrl) ctrl.classList.add('disabled');
+      } else {
+        st.nd.delete(id);
+        if(ctrl) ctrl.classList.remove('disabled');
+      }
+    });
+  });
+  // Next
+  document.getElementById('p1next').addEventListener('click',()=>{
+    const aq=getAlarmQs();
+    if(aq.length===0){st.phase=3;render();return;}
+    st.idx=0;st.phase=2;render();
+  });
+}
+
+// PHASE 2 — CAUSES
+function renderP2(){
+  const aq=getAlarmQs();
+  const q=aq[st.idx];
+  const cat=CATS[q.cat];
+  const sel=st.causes[q.id]||[];
+  const scoreLabel=q.tipo==='scale'?`${st.ans[q.id]}/10`:q.tipo==='yn'?(q.inv?'No seleccionado':'Sí seleccionado'):`${st.ans[q.id]} ${q.unit||''}`;
+  return`<div class="q-nav">
+  <div class="q-counter">Situación ${st.idx+1} de ${aq.length}</div>
+  <div style="font-size:12px;color:var(--muted)">${cat.em} ${cat.name}</div>
+  </div>
+  <div class="card">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+  <span class="q-badge">${scoreLabel}</span>
+  </div>
+  <div style="font-size:15px;font-weight:600;color:var(--navy);margin-bottom:14px;line-height:1.5">${q.q}</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:12px">¿Cuál es la causa real? Marca todas las que apliquen.</div>
+  ${q.cs.map(cr=>{const txt=(CR_CTX[q.id]&&CR_CTX[q.id][cr])||CR[cr];return`<div class="cause-opt${sel.includes(cr)?' on':''}" data-id="${q.id}" data-cr="${cr}"><input type="checkbox" ${sel.includes(cr)?'checked':''} data-id="${q.id}" data-cr="${cr}"><div><div class="cause-text">${txt}</div></div></div>`;}).join('')}
+  <div class="btn-row">
+  ${st.idx>0?`<button class="btn" id="p2prev">← Anterior</button>`:''}
+  <button class="btn primary" id="p2next" ${sel.length===0?'disabled style="opacity:.35;cursor:not-allowed"':''}>
+  ${st.idx<aq.length-1?'Siguiente →':'Ver diagnóstico →'}</button>
+  </div></div>`;
+}
+
+function attachP2(){
+  document.querySelectorAll('.cause-opt').forEach(opt=>{
+    opt.addEventListener('click',function(e){
+      if(e.target.tagName==='INPUT') return;
+      toggleCause(this.dataset.id,this.dataset.cr);
+    });
+  });
+  document.querySelectorAll('input[type=checkbox][data-cr]').forEach(cb=>{
+    cb.addEventListener('change',function(){ toggleCause(this.dataset.id,this.dataset.cr); });
+  });
+  function toggleCause(id,cr){
+    if(!st.causes[id]) st.causes[id]=[];
+    const i=st.causes[id].indexOf(cr);
+    if(i>-1) st.causes[id].splice(i,1); else st.causes[id].push(cr);
+    render();
+  }
+  const prev=document.getElementById('p2prev');
+  if(prev) prev.addEventListener('click',()=>{st.idx--;render();});
+  const next=document.getElementById('p2next');
+  if(next) next.addEventListener('click',()=>{
+    const aq=getAlarmQs();
+    if(st.idx<aq.length-1){st.idx++;render();}
+    else{st.phase=3;render();}
+  });
+}
+
+// PHASE 3 — DIAGNOSIS
+function renderP3(){
+  const diag=computeDiag();
+  const aq=getAlarmQs();
+  const ndAq=getNdAlarmQs();
+
+  let html=`<div class="phase-label">Diagnóstico</div>
+  <div class="phase-title">Tu perfil de rendimiento</div>
+  <div class="phase-desc">Basado en ${aq.length} situaciones analizadas.</div>`;
+
+  if(diag.topSC.length===0||aq.length===0){
+    html+=`<div class="card"><p style="color:var(--muted);font-size:14px">No hay datos suficientes para el diagnóstico. Revisa tus respuestas.</p></div>`;
+  } else {
+    // Structural vs micro-leaks
+    if(diag.isStructural){
+      html+=`<div class="callout"><strong>Diagnóstico estructural</strong> — Tienes al menos una super-causa con saturación ≥40%. Hay una falla de fondo que genera múltiples síntomas simultáneamente. Resuélvela y varios distractores desaparecen solos.</div>`;
+    } else {
+      html+=`<div class="callout" style="background:#EAF4FB;border-left-color:var(--accent2);color:#1e3a5c"><strong>Diagnóstico de micro-fugas</strong> — Tus sistemas base son sólidos. Tu pérdida de rendimiento viene de fugas puntuales, no de una falla estructural. Aquí están las más relevantes.</div>`;
+    }
+
+    html+=`<h3 style="font-size:15px;font-weight:600;color:var(--navy);margin:20px 0 10px">Super-causas — nivel de saturación</h3>`;
+    diag.topSC.forEach(([sid,pct],i)=>{
+      const sv=SC[sid];
+      const frame=SC_FRAME[sid]||'';
+      const barColor=pct>=60?'#8B1A1A':pct>=40?'#F59E0B':'#2E75B6';
+      if(pct===0) return;
+      html+=`<div class="diag-cause" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px;font-weight:700;color:var(--muted)">${i+1}</span>
+      <div><div style="font-size:14px;font-weight:600;color:${sv.color}">${sv.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${pct>=40?`El ${pct}% ${frame}`:`Saturación: ${pct}%`}</div>
+      </div></div>
+      <span style="font-size:22px;font-weight:700;color:${barColor}">${pct}%</span>
+      </div>
+      <div class="diag-bar-wrap"><div class="diag-bar" style="width:${pct}%;background:${barColor};transition:width .8s"></div></div>
+      </div>`;
+    });
+
+    html+=`<h3 style="font-size:15px;font-weight:600;color:var(--navy);margin:24px 0 10px">Causas raíz — vectores dominantes</h3>`;
+    diag.topCR.slice(0,6).forEach(([cr,pct],i)=>{
+      if(pct===0) return;
+      html+=`<div style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      <div style="flex:1"><span style="font-size:11px;font-weight:700;color:var(--accent2);margin-right:8px">${cr}</span>
+      <span style="font-size:13px">${CR[cr]}</span></div>
+      <span style="font-size:16px;font-weight:700;color:var(--navy);margin-left:12px">${pct}%</span>
+      </div>`;
+    });
+
+    html+=`<h3 style="font-size:15px;font-weight:600;color:var(--navy);margin:24px 0 10px">Situaciones con mayor impacto</h3>
+    <table class="results-table"><tr><th>#</th><th>Situación</th><th>Valor</th><th>Causas</th></tr>`;
+    aq.forEach(q=>{
+      const cs=st.causes[q.id]||[];
+      const val=st.nd.has(q.id)?'Sin datos':
+        q.tipo==='yn'||(q.tipo||'').startsWith('yn')?(st.ans[q.id]==='si'?'Sí':'No'):
+        q.tipo==='scale'?`${st.ans[q.id]}/10`:
+        `${st.ans[q.id]} ${q.unit||''}`;
+      html+=`<tr><td style="font-size:11px;font-weight:700;color:var(--muted)">${q.id}</td>
+      <td style="font-size:13px">${q.q}</td>
+      <td style="font-size:13px;font-weight:600;white-space:nowrap">${val}</td>
+      <td style="font-size:12px;color:var(--accent)">${cs.join(', ')||'—'}</td></tr>`;
+    });
+    html+=`</table>`;
+  }
+
+  if(ndAq.length>0){
+    html+=`<h3 style="font-size:15px;font-weight:600;color:var(--navy);margin:24px 0 10px">Áreas sin datos — investiga antes de descartar</h3>`;
+    ndAq.forEach(q=>{
+      html+=`<div class="blind-item">${q.id} — ${q.q}</div>`;
+    });
+  }
+
+  html+=`<div class="btn-row" style="margin-top:28px">
+  <button class="btn primary" onclick="downloadReport()">Descargar informe</button>
+  <button class="btn amber" onclick="copyForClaude()">Copiar para Claude</button>
+  <button class="btn" onclick="if(confirm('¿Reiniciar?')){Object.assign(st,{phase:0,kidsFilter:null,ans:{},nd:new Set(),causes:{},idx:0,shuffled:null});render()}">Reiniciar</button>
+  </div>
+  <p style="font-size:12px;color:var(--muted);margin-top:10px">Copia los resultados y pégalos en el chat de Claude para el análisis y diseño de soluciones.</p>`;
+
+  return html;
+}
+
+function buildText(){
+  const diag=computeDiag();
+  const aq=getAlarmQs();
+  const ndAq=getNdAlarmQs();
+  let t='RESULTADOS — POTENCIACIÓN PERSONAL\n\n';
+  t+='SITUACIONES CON MAYOR IMPACTO:\n';
+  aq.forEach(q=>{
+    const cs=st.causes[q.id]||[];
+    const val=st.nd.has(q.id)?'Sin datos':
+      q.tipo==='yn'?(st.ans[q.id]==='si'?'Sí':'No'):
+      q.tipo==='scale'?`${st.ans[q.id]}/10`:
+      `${st.ans[q.id]} ${q.unit||''}`;
+    t+=`• ${q.id} — ${q.q}\n  Valor: ${val}${cs.length?' | Causas: '+cs.join(', '):''}\n`;
+  });
+  t+='\nCAUSAS RAÍZ DOMINANTES:\n';
+  diag.topC.forEach(([cr,w])=>{ t+=`• ${cr} (peso ${w}): ${CR[cr]}\n`; });
+  t+='\nSUPER-CAUSAS DOMINANTES:\n';
+  diag.topSC.forEach(([sid,w])=>{ t+=`• ${SC[sid].name} (peso ${w})\n`; });
+  if(ndAq.length>0){
+    t+='\nÁREAS SIN DATOS:\n';
+    ndAq.forEach(q=>{ t+=`• ${q.id} — ${q.q}\n`; });
+  }
+  t+='\nAnáliza estos resultados. Identifica mi patrón dominante y propón el primer paso concreto.';
+  return t;
+}
+
+function copyForClaude(){
+  const t=buildText();
+  const ta=document.getElementById('copy-area');
+  ta.value=t;ta.select();
+  try{document.execCommand('copy');alert('Copiado. Pégalo en el chat de Claude.');}
+  catch(e){prompt('Copia este texto:',t);}
+}
+
+function downloadReport(){
+  const diag=computeDiag();
+  const aq=getAlarmQs();
+  const ndAq=getNdAlarmQs();
+  const date=new Date().toLocaleDateString('es-ES');
+  const maxW=diag.topC[0]?diag.topC[0][1]:1;
+  const maxSCW=diag.topSC[0]?diag.topSC[0][1]:1;
+
+  let h=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico — Potenciación Humana by Makoli</title>
+<style>body{font-family:system-ui,sans-serif;max-width:820px;margin:40px auto;padding:24px;color:#1a1a1a;line-height:1.6}
+h1{font-size:24px;color:#1B3A5C;margin-bottom:4px}h2{font-size:16px;color:#1B3A5C;margin:28px 0 10px;padding-bottom:5px;border-bottom:2px solid #DDE3EC}
+.muted{color:#64748B;font-size:13px}.card{background:#f8fafc;border-radius:8px;padding:14px 18px;margin:8px 0;border:1px solid #DDE3EC}
+.bar-wrap{background:#e2e8f0;border-radius:3px;height:6px;margin:6px 0}.bar{height:100%;border-radius:3px;background:#1B3A5C}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:#EAF4FB;color:#2E75B6}
+.sc{border-left:4px solid #1B3A5C;padding:12px 16px;background:#EAF4FB;border-radius:0 8px 8px 0;margin:8px 0}
+.blind{padding:8px 14px;border:1px dashed #DDE3EC;border-radius:6px;margin:5px 0;font-size:13px;color:#64748B}
+.callout{padding:12px 16px;background:#FEF9EC;border-left:4px solid #F59E0B;border-radius:0 8px 8px 0;font-size:13px;color:#92400E;margin:14px 0}
+table{width:100%;border-collapse:collapse}td,th{padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;text-align:left}th{color:#64748B;font-weight:600}
+.footer{margin-top:48px;padding-top:12px;border-top:1px solid #eee;font-size:12px;color:#aaa}
+</style></head><body>
+<h1>Potenciación Humana by Makoli</h1>
+<p class="muted">Diagnóstico generado el ${date}</p>
+<div class="callout">Ley de Pareto: el 20% de las causas raíz generan el 80% de la pérdida de atención. No resuelvas todas — identifica las dominantes y atácalas con precisión.</div>
+<h2>Causas raíz dominantes</h2>`;
+
+  diag.topC.forEach(([cr,w],i)=>{
+    const pct=Math.round(w/maxW*100);
+    h+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+    <div><strong>${i+1}.</strong> <span class="badge">${cr}</span></div><span class="muted">peso ${w}</span></div>
+    <p style="margin-bottom:6px;font-size:14px">${CR[cr]}</p>
+    <div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div></div>`;
+  });
+
+  h+=`<h2>Super-causas dominantes</h2>`;
+  diag.topSC.forEach(([sid,w],i)=>{
+    const sv=SC[sid];
+    const pct=Math.round(w/maxSCW*100);
+    h+=`<div class="sc" style="border-left-color:${sv.color}">
+    <strong style="color:${sv.color}">${i+1}. ${sv.name}</strong> <span class="muted">— peso ${w}</span>
+    <p style="font-size:13px;color:#555;margin-top:2px">${sv.desc}</p>
+    <div class="bar-wrap"><div class="bar" style="width:${pct}%;background:${sv.color}"></div></div></div>`;
+  });
+
+  h+=`<h2>Situaciones con mayor impacto</h2><table>
+  <tr><th>#</th><th>Situación</th><th>Valor</th><th>Causas identificadas</th></tr>`;
+  aq.forEach(q=>{
+    const cs=st.causes[q.id]||[];
+    const val=st.nd.has(q.id)?'Sin datos':
+      q.tipo==='yn'?(st.ans[q.id]==='si'?'Sí':'No'):
+      q.tipo==='scale'?`${st.ans[q.id]}/10`:
+      `${st.ans[q.id]} ${q.unit||''}`;
+    h+=`<tr><td><span class="badge">${q.id}</span></td><td>${q.q}</td><td>${val}</td><td style="color:#2E75B6">${cs.join(', ')||'—'}</td></tr>`;
+  });
+  h+=`</table>`;
+
+  if(ndAq.length>0){
+    h+=`<h2>Áreas sin datos</h2>`;
+    ndAq.forEach(q=>{ h+=`<div class="blind"><span class="badge">${q.id}</span> ${q.q}</div>`; });
+  }
+
+  h+=`<div class="footer">Potenciación Humana by Makoli · ${date}</div></body></html>`;
+
+  const blob=new Blob([h],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='diagnostico_potenciacion_'+date.replace(/\//g,'-')+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+render();
+</script>
+</body>
+</html>
